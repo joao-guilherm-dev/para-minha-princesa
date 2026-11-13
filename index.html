@@ -141,7 +141,7 @@ const S=[
 const $=id=>document.getElementById(id);
 const M=[['⭐','dance'],['🎀','jump'],['🌹','sway'],['🗡️','wiggle'],['🎈','spin'],['💖','hb'],['🎉','jump']];
 function setM(e,a){$('acc').textContent=e;$('mb').className='mb '+a}
-let cur=0,muted=false,timer,auds=S.map((_,i)=>{const a=new Audio('audio/'+(i+1)+'.mp3');a.loop=true;a.preload='auto';a.volume=0;return a}),fade;
+let cur=0,muted=false,timer,A=new Audio();A.loop=true;A.preload='auto';
 $('dots').innerHTML=S.map(()=>'<i></i>').join('');
 function spawn(box,list,up,rate){
   return setInterval(()=>{
@@ -155,17 +155,11 @@ function spawn(box,list,up,rate){
 let introT=spawn($('fxi'),['💖','✨','🌸','💫','🦋','💕'],1,220);
 function playAudio(i){
   if(S[i].noaudio)return;
-  clearInterval(fade);
-  const old=auds.filter((a,k)=>k!==i&&!a.paused);
-  const a=auds[i];a.currentTime=0;a.play().catch(()=>{});
-  fade=setInterval(()=>{
-    let done=true;
-    if(!muted&&a.volume<.9){a.volume=Math.min(.9,a.volume+.05);done=false}
-    old.forEach(o=>{if(o.volume>.05){o.volume=Math.max(0,o.volume-.07);done=false}else{o.pause()}});
-    if(done)clearInterval(fade);
-  },80);
+  A.pause();A.src='audio/'+(i+1)+'.mp3';A.muted=muted;A.currentTime=0;
+  const pr=A.play();if(pr&&pr.catch)pr.catch(()=>{});
 }
 function show(i){
+  playAudio(i);
   cur=i;const s=S[i],sc=$('scene');setM(M[i][0],M[i][1]);
   sc.classList.add('hidden');
   setTimeout(()=>{
@@ -182,7 +176,7 @@ function show(i){
     setTimeout(()=>n.classList.add('show'),1000+s.t.split(' ').length*180+400);
     clearInterval(timer);$('fx').innerHTML='';timer=spawn($('fx'),s.fx,s.up,s.final?90:260);
     [...$('dots').children].forEach((d,k)=>d.classList.toggle('on',k===i));
-    sc.classList.remove('hidden');playAudio(i);
+    sc.classList.remove('hidden');
   },500);
 }
 const cv=$('fw'),cx=cv.getContext('2d');let fwT,raf,P=[];
@@ -200,7 +194,7 @@ function fwOn(on){clearInterval(fwT);cancelAnimationFrame(raf);P=[];cx.clearRect
   for(let k=0;k<4;k++)setTimeout(go,k*250+700);fwT=setInterval(go,550)}
 $('go').onclick=()=>{clearInterval(introT);$('intro').classList.add('hidden');show(0)};
 $('next').onclick=()=>show(cur+1<S.length?cur+1:0);
-$('mute').onclick=()=>{muted=!muted;$('mute').textContent=muted?'🔇':'🔊';auds.forEach(a=>a.volume=muted?0:(a.paused?0:.9))};
+$('mute').onclick=()=>{muted=!muted;$('mute').textContent=muted?'🔇':'🔊';A.muted=muted};
 </script>
 </body>
 </html>
